@@ -10,6 +10,8 @@ import (
 	"sync"
 )
 
+const mainPage = "/posts"
+
 func Home(w http.ResponseWriter, r *http.Request) {
 	tmpl, err := template.ParseFiles("internal/templates/index.html")
 	if err != nil {
@@ -38,7 +40,7 @@ func Login(db *sql.DB) http.HandlerFunc {
 				http.Error(w, "Invalid username/email or password", http.StatusUnauthorized)
 				return
 			}
-			http.Redirect(w, r, "/posts", http.StatusSeeOther)
+			http.Redirect(w, r, mainPage, http.StatusSeeOther)
 		}
 	}
 }
@@ -66,7 +68,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		http.Redirect(w, r, "/posts", http.StatusSeeOther)
+		http.Redirect(w, r, mainPage, http.StatusSeeOther)
 	}
 }
 
@@ -118,7 +120,7 @@ func NewPost(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		http.Redirect(w, r, "/posts", http.StatusSeeOther)
+		http.Redirect(w, r, mainPage, http.StatusSeeOther)
 	}
 }
 
@@ -209,5 +211,5 @@ func DeletePost(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	http.Redirect(w, r, "/posts", http.StatusSeeOther)
+	http.Redirect(w, r, mainPage, http.StatusSeeOther)
 }

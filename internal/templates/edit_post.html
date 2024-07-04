@@ -4,9 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Post</title>
-    <link rel="stylesheet" href="./css/edit_post.css">"
+    <link rel="stylesheet" type="text/css" href="../templates/css/edit_post.css">
+    <link rel="stylesheet" type="text/css" href="../templates/css/userBar.css">
 </head>
 <body>
+    <div class="userBar">
+        <img class="userPic" src="{{.Image}}" alt="user pic">
+        <h3 class="username">{{.Username}}</h3>
+        <a class="editButton" href="/editProfile">Edit</a>
+    </div>
     <div class="container">
         <h1>Edit Post</h1>
         <form action="/post/edit/{{.ID}}" method="post">
