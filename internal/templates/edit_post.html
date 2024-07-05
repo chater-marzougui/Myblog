@@ -15,7 +15,7 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            height: 200vh;
+            height: auto;
         }
 
         .container {
@@ -28,7 +28,7 @@
         }
         
         .userBar{
-            position: absolute;
+            position: fixed;
             width: 100%;
             top: 0;
             left: 0;
@@ -115,25 +115,29 @@
         .back-link a:hover {
             text-decoration: underline;
         }
+        .image {
+            width: 100%;
+        }
     </style>
 </head>
 <body>
     <div class="userBar">
-        <img class="userPic" src="{{.Image}}" alt="user pic">
-        <h3 class="username">{{.Username}}</h3>
+        <a href="/profile"><img class="userPic" src="{{.User.Icon}}" alt="user pic"></a>
+        <a href="/profile"><h3 class="username">{{.User.Username}}</h3></a>
         <a class="editButton" href="/editProfile">Edit</a>
     </div>
+    <br><br><br><br><br>
     <div class="container">
         <h1>Edit Post</h1>
-        <form action="/post/edit/{{.ID}}" method="post">
+        <form action="/post/edit/{{.Post.ID}}" method="post">
             <label for="title">Title:</label>
-            <input type="text" id="title" name="title" value="{{.Title}}" required>
+            <input type="text" id="title" name="title" value="{{.Post.Title}}" required>
             <label for="content">Content:</label>
-            <textarea id="content" name="content" required>{{.Content}}</textarea>
+            <textarea id="content" name="content" required>{{.Post.Content}}</textarea>
             <input type="submit" value="Update Post">
         </form>
         <div class="back-link">
-            <a href="/">Back to Posts</a>
+            <a href="/posts">Back to Posts</a>
         </div>
     </div>
 </body>

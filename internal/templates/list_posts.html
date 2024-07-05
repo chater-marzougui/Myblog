@@ -26,7 +26,7 @@
         }
         
         .userBar{
-            position: absolute;
+            position: fixed;
             width: 100%;
             top: 0;
             left: 0;
@@ -118,15 +118,16 @@
 </head>
 <body>
     <div class="userBar">
-        <img class="userPic" src="{{.Image}}" alt="user pic">
-        <h3 class="username">{{.Username}}</h3>
+        <a href="/profile"><img class="userPic" src="{{.User.Icon}}" alt="user pic"></a>
+        <a href="/profile"><h3 class="username">{{.User.Username}}</h3></a>
         <a class="editButton" href="/editProfile">Edit</a>
     </div>
+    <br><br><br><br><br>
     <div class="container">
         <h1>All Posts</h1>
         
         <a href="/new" class="new-post-link">Create New Post</a>
-        {{range .}}
+        {{range .Posts}}
         <h2><a href="/post/{{.ID}}">{{.Title}}</a></h2>
         <p>{{.Content}}</p>
         <img id="post-image" src="{{.Image}}" alt="img">
@@ -140,4 +141,3 @@
         {{end}}
     </div>
 </body>
-</html>

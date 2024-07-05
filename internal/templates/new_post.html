@@ -104,12 +104,11 @@
 </head>
 <body>
     <div class="userBar">
-        <img class="userPic" src="{{.Image}}" alt="user pic">
-        <h3 class="username">{{.Username}}</h3>
+        <a href="/profile"><img class="userPic" src="{{.Icon}}" alt="user pic"></a>
+        <a href="/profile"><h3 class="username">{{.Username}}</h3></a>
         <a class="editButton" href="/editProfile">Edit</a>
     </div>
     <div class="container">
-
         <h1>Create a New Post</h1>
         <form action="/new" method="post">
             <label for="title">Title:</label>

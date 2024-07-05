@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{.Title}}</title>
+    <title>{{.Post.Title}}</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -14,7 +14,7 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            height: auto;
         }
         .container {
             background-color: #fff;
@@ -26,7 +26,7 @@
         }
                 
         .userBar{
-            position: absolute;
+            position: fixed;
             width: 100%;
             top: 0;
             left: 0;
@@ -105,25 +105,30 @@
             margin-top: 20px;
             font-size: 16px;
         }
+        .image {
+            width: 100%;
+        }
     </style>
 </head>
 <body>
     <div class="userBar">
-        <img class="userPic" src="{{.Image}}" alt="user pic">
-        <h3 class="username">{{.Username}}</h3>
+        <a href="/profile"><img class="userPic" src="{{.User.Icon}}" alt="user pic"></a>
+        <a href="/profile"><h3 class="username">{{.User.Username}}</h3></a>
         <a class="editButton" href="/editProfile">Edit</a>
     </div>
+    <br><br><br><br><br>
     <div class="container">
-        <h1>{{.Title}}</h1>
-        <p>{{.Content}}</p>
+        <h1>{{.Post.Title}}</h1>
+        <p>{{.Post.Content}}</p>
+        <img class="image" src="{{.Post.Image}}" alt="img">
         <div class="actions">
-            <a href="/post/edit/{{.ID}}">Edit</a>
-            <form action="/post/delete/{{.ID}}" method="post">
+            <a href="/post/edit/{{.Post.ID}}">Edit</a>
+            <form action="/post/delete/{{.Post.ID}}" method="post">
                 <input type="submit" value="Delete">
             </form>
         </div>
         <div class="back-link">
-            <a href="/">Back to Posts</a>
+            <a href="/posts">Back to Posts</a>
         </div>
     </div>
 </body>
