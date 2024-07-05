@@ -2,7 +2,9 @@ package models
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
+	"myblog/internal/global"
 	"time"
 )
 
@@ -19,6 +21,16 @@ func CreateUser(username, email, password, icon string) error {
 	hashedPassword, err := HashPassword(password)
 	if err != nil {
 		return err
+	}
+	mailTest := false
+	for i := range email {
+		if email[i] == '@' {
+			mailTest = true
+			break
+		}
+	}
+	if !mailTest {
+		return fmt.Errorf("invalid email format")
 	}
 	_, err = DB.Exec("INSERT INTO users (username, email, password, icon) VALUES (?, ?, ?, ?)", username, email, hashedPassword, icon)
 	return err
@@ -38,12 +50,12 @@ func HashPassword(password string) (string, error) {
 	return string(hashedPassword), nil
 }
 
-func AuthenticateUser(usernameOrEmail, password string) (ID int, err error) {
+func AuthenticateUser(usernameOrEmail, password string) error {
 	hashedPassword, err := HashPassword(password)
 	var storedHashedPassword string
 	var userID int
 	if err != nil {
-		return 0, err
+		return err
 	}
 	typeToCheck := "username"
 	for i := range usernameOrEmail {
@@ -56,14 +68,16 @@ func AuthenticateUser(usernameOrEmail, password string) (ID int, err error) {
 	err = DB.QueryRow(query, usernameOrEmail).Scan(&userID, &storedHashedPassword)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return 0, fmt.Errorf("no user found with the given %s", typeToCheck)
+			return fmt.Errorf("no user found with the given %s", typeToCheck)
 		}
-		return 0, fmt.Errorf("error querying user: %v", err)
+		return fmt.Errorf("error querying user: %v", err)
 	}
 	if storedHashedPassword != hashedPassword {
-		return 0, fmt.Errorf("invalid password")
+		return fmt.Errorf("invalid password")
 	}
-	return 0, nil
+	global.ModifyUser(userID)
+	global.SetAuthenticated()
+	return nil
 }
 
 func DeleteUser(db *sql.DB, id int) error {
@@ -82,4 +96,24 @@ func DeleteUser(db *sql.DB, id int) error {
 	}
 
 	return nil
+}
+
+func GetUserPosts(userID int) ([]Post, error) {
+	query := "SELECT id, title, content, image, user_id FROM posts WHERE user_id = ?"
+	rows, err := DB.Query(query, userID)
+	if err != nil {
+		return nil, errors.New("failed to get posts: " + err.Error())
+	}
+	defer rows.Close()
+
+	var posts []Post
+	for rows.Next() {
+		var post Post
+		err := rows.Scan(&post.ID, &post.Title, &post.Content, &post.Image, &post.UserID)
+		if err != nil {
+			return nil, errors.New("failed to scan post: " + err.Error())
+		}
+		posts = append(posts, post)
+	}
+	return posts, nil
 }

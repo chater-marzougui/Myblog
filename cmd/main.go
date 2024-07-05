@@ -7,10 +7,9 @@ import (
 	"net/http"
 )
 
-var userID int
-
 func main() {
 	models.InitDB()
+	//https://unsplash.it/800/800/?random
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		handlers.Login(models.DB)(w, r)
@@ -21,6 +20,8 @@ func main() {
 	http.HandleFunc("/post/delete/", handlers.DeletePost)
 	http.HandleFunc("/new", handlers.NewPost)
 	http.HandleFunc("/register", handlers.Register)
+	http.HandleFunc("/editProfile", handlers.EditProfile)
+	http.HandleFunc("/profile", handlers.ViewProfile)
 
 	log.Println("Starting server on :8080")
 	err := http.ListenAndServe(":8080", nil)

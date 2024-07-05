@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"html/template"
 	"log"
+	"myblog/internal/global"
 	"myblog/internal/models"
 	"net/http"
 	"strconv"
@@ -11,6 +12,17 @@ import (
 )
 
 const mainPage = "/posts"
+const notAuthenticated = "User not authenticated"
+
+type PageData struct {
+	Posts []models.Post
+	User  models.User
+}
+
+type PostPageData struct {
+	Post models.Post
+	User models.User
+}
 
 func Home(w http.ResponseWriter, r *http.Request) {
 	tmpl, err := template.ParseFiles("internal/templates/index.html")
@@ -34,7 +46,7 @@ func Login(db *sql.DB) http.HandlerFunc {
 			usernameOrEmail := r.FormValue("usernameOrEmail")
 			password := r.FormValue("password")
 
-			_, err := models.AuthenticateUser(usernameOrEmail, password)
+			err := models.AuthenticateUser(usernameOrEmail, password)
 			if err != nil {
 				log.Println("Error authenticating user:", err)
 				http.Error(w, "Invalid username/email or password", http.StatusUnauthorized)
@@ -84,7 +96,7 @@ func DeleteAccountHandler(db *sql.DB, authenticatedUsers *struct {
 		authenticatedUsers.RUnlock()
 
 		if !authenticated {
-			http.Error(w, "User not authenticated", http.StatusUnauthorized)
+			http.Error(w, notAuthenticated, http.StatusUnauthorized)
 			return
 		}
 
@@ -110,7 +122,8 @@ func NewPost(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		tmpl.Execute(w, nil)
+		data, _ := models.GetUser(global.GetUserID())
+		tmpl.Execute(w, data)
 	} else if r.Method == http.MethodPost {
 		title := r.FormValue("title")
 		content := r.FormValue("content")
@@ -124,27 +137,88 @@ func NewPost(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func ViewProfile(w http.ResponseWriter, r *http.Request) {
+	if !global.IsAuthenticated() {
+		http.Error(w, notAuthenticated, http.StatusUnauthorized)
+		return
+	}
+
+	userID := global.GetUserID()
+
+	user, err := models.GetUser(userID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	posts, err := models.GetUserPosts(userID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	data := struct {
+		User  models.User
+		Posts []models.Post
+	}{
+		User:  *user,
+		Posts: posts,
+	}
+
+	tmpl, err := template.ParseFiles("internal/templates/view_profile.html")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	err = tmpl.Execute(w, data)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}
+
 func ListPosts(w http.ResponseWriter, r *http.Request) {
+	if !global.IsAuthenticated() {
+		http.Error(w, notAuthenticated, http.StatusUnauthorized)
+		return
+	}
 	posts, err := models.GetPosts()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	user, err := models.GetUser(global.GetUserID())
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	data := PageData{
+		Posts: posts,
+		User:  *user,
+	}
+
 	tmpl, err := template.ParseFiles("internal/templates/list_posts.html")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	tmpl.Execute(w, posts)
+	err = tmpl.Execute(w, data)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 }
 
 func ViewPost(w http.ResponseWriter, r *http.Request) {
+	if !global.IsAuthenticated() {
+		http.Error(w, notAuthenticated, http.StatusUnauthorized)
+		return
+	}
 	id, err := strconv.Atoi(r.URL.Path[len("/post/"):])
 	if err != nil {
 		http.NotFound(w, r)
 		return
 	}
-
 	post, err := models.GetPost(id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -154,13 +228,24 @@ func ViewPost(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
-
 	tmpl, err := template.ParseFiles("internal/templates/view_post.html")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	tmpl.Execute(w, post)
+	user, err := models.GetUser(global.GetUserID())
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	data := PostPageData{
+		Post: *post,
+		User: *user,
+	}
+	err = tmpl.Execute(w, data)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 }
 
 func EditPost(w http.ResponseWriter, r *http.Request) {
@@ -186,7 +271,16 @@ func EditPost(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		tmpl.Execute(w, post)
+		user, _ := models.GetUser(global.GetUserID())
+		data := PostPageData{
+			Post: *post,
+			User: *user,
+		}
+		err = tmpl.Execute(w, data)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	} else if r.Method == http.MethodPost {
 		title := r.FormValue("title")
 		content := r.FormValue("content")
@@ -212,4 +306,50 @@ func DeletePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	http.Redirect(w, r, mainPage, http.StatusSeeOther)
+}
+
+func EditProfile(w http.ResponseWriter, r *http.Request) {
+	if !global.IsAuthenticated() {
+		http.Error(w, notAuthenticated, http.StatusUnauthorized)
+		return
+	}
+
+	userID := global.GetUserID()
+
+	if r.Method == http.MethodGet {
+		user, err := models.GetUser(userID)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		tmpl, err := template.ParseFiles("internal/templates/edit_profile.html")
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		tmpl.Execute(w, user)
+	} else if r.Method == http.MethodPost {
+		username := r.FormValue("username")
+		email := r.FormValue("email")
+		password, _ := models.HashPassword(r.FormValue("password"))
+		icon := r.FormValue("icon")
+
+		user := models.User{
+			ID:       userID,
+			Username: username,
+			Email:    email,
+			Password: password,
+			Icon:     icon,
+		}
+
+		err := models.UpdateUser(user)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		http.Redirect(w, r, "/profile", http.StatusSeeOther)
+	}
 }
