@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profile</title>
+    <link rel="stylesheet" href="/static/css/template.css">
     <link rel="stylesheet" type="text/css" href="/static/css/view_profile.css">    
 </head>
 <body>
@@ -11,6 +12,9 @@
         <div class="profile-header">
             <img src="{{.User.Icon}}" alt="Profile">
             <h1>{{.User.Username}}</h1>
+            <form action="/profile/delete/{{.User.ID}}" method="post">
+                <input type="submit" value="Delete">
+            </form>
         </div>
         <div class="profile-info">
             <p>Email: {{.User.Email}}</p>

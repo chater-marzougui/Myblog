@@ -8,7 +8,6 @@ import (
 	"myblog/internal/models"
 	"net/http"
 	"strconv"
-	"sync"
 )
 
 const mainPage = "/posts"
@@ -80,39 +79,23 @@ func Register(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		http.Redirect(w, r, mainPage, http.StatusSeeOther)
+		http.Redirect(w, r, "/", http.StatusSeeOther)
 	}
 }
 
-func DeleteAccountHandler(db *sql.DB, authenticatedUsers *struct {
-	sync.RWMutex
-	m map[string]int
-}) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		usernameOrEmail := r.FormValue("usernameOrEmail")
-
-		authenticatedUsers.RLock()
-		userID, authenticated := authenticatedUsers.m[usernameOrEmail]
-		authenticatedUsers.RUnlock()
-
-		if !authenticated {
-			http.Error(w, notAuthenticated, http.StatusUnauthorized)
-			return
-		}
-
-		err := models.DeleteUser(db, userID)
-		if err != nil {
-			log.Println("Error deleting user:", err)
-			http.Error(w, "Error deleting user", http.StatusInternalServerError)
-			return
-		}
-
-		authenticatedUsers.Lock()
-		delete(authenticatedUsers.m, usernameOrEmail)
-		authenticatedUsers.Unlock()
-
-		http.Redirect(w, r, "/login", http.StatusSeeOther)
+func DeleteUser(w http.ResponseWriter, r *http.Request) {
+	/*id, err := strconv.Atoi(r.URL.Path[len("/profile/delete/"):])
+	if err != nil {
+		http.NotFound(w, r)
+		return
 	}
+
+	//err = models.DeleteUser(id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}*/
+	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
 func NewPost(w http.ResponseWriter, r *http.Request) {

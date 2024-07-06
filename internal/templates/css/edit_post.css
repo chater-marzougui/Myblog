@@ -1,16 +1,6 @@
-body {
-    flex-direction: row !important;
-    height: 100vh !important;
-}
-#regButton {
-    text-align: center;
-    width: 100%;
-    color: #555;
-    display: block;
-    padding: 20px 0;
-}
+
 .container {
-    max-width: 400px;
+    max-width: 600px;
 }
 form {
     display: flex;
@@ -22,12 +12,16 @@ label {
     color: #555;
 }
 input[type="text"],
-input[type="password"] {
+textarea {
     padding: 10px;
     margin-top: 5px;
     border: 1px solid #ccc;
     border-radius: 4px;
     font-size: 16px;
+}
+textarea {
+    resize: vertical;
+    height: 150px;
 }
 input[type="submit"] {
     margin-top: 20px;
@@ -42,4 +36,19 @@ input[type="submit"] {
 }
 input[type="submit"]:hover {
     background-color: #45a049;
+}
+.back-link {
+    margin-top: 20px;
+    text-align: center;
+}
+.back-link a {
+    color: #4CAF50;
+    text-decoration: none;
+    font-weight: bold;
+}
+.back-link a:hover {
+    text-decoration: underline;
+}
+.image {
+    width: 100%;
 }

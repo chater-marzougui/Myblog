@@ -80,9 +80,9 @@ func AuthenticateUser(usernameOrEmail, password string) error {
 	return nil
 }
 
-func DeleteUser(db *sql.DB, id int) error {
+func DeleteUser(id int) error {
 	query := "DELETE FROM users WHERE id = ?"
-	result, err := db.Exec(query, id)
+	result, err := DB.Exec(query, id)
 	if err != nil {
 		return fmt.Errorf("error deleting user: %v", err)
 	}

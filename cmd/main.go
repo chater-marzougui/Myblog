@@ -20,6 +20,7 @@ func main() {
 	http.HandleFunc("/posts/", handlers.ListPosts)
 	http.HandleFunc("/post/edit/", handlers.EditPost)
 	http.HandleFunc("/post/delete/", handlers.DeletePost)
+	http.HandleFunc("/profile/delete/", handlers.DeleteUser)
 	http.HandleFunc("/new", handlers.NewPost)
 	http.HandleFunc("/register", handlers.Register)
 	http.HandleFunc("/editProfile", handlers.EditProfile)
