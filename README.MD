@@ -25,7 +25,7 @@
   </p>
   <br><br>
   <a href="https://github.com/chater-marzougui/Myblog">
-    <img src="./forReadme.png" alt="Logo" width="70%">
+    <img src="./internal/ICON.png.png" alt="Logo" width="70%">
   </a>
 </div>
 
