@@ -9,6 +9,8 @@ import (
 
 func main() {
 	models.InitDB()
+	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("internal/templates"))))
+
 	//https://unsplash.it/800/800/?random
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
